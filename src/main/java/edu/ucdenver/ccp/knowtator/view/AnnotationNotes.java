@@ -35,11 +35,14 @@ import java.awt.event.KeyListener;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.SwingUtilities;
 
 /** The type Annotation notes. */
 public class AnnotationNotes extends JTextArea implements KnowtatorComponent, ModelListener {
   private ConceptAnnotation conceptAnnotation;
   private KnowtatorView view;
+
+  private boolean isUpdating = false;
 
   /**
    * Instantiates a new Annotation notes.
@@ -67,15 +70,26 @@ public class AnnotationNotes extends JTextArea implements KnowtatorComponent, Mo
         .addDocumentListener(
             new DocumentListener() {
               @Override
-              public void insertUpdate(DocumentEvent e) {}
+              public void insertUpdate(DocumentEvent e) {
+                save();
+              }
 
               @Override
-              public void removeUpdate(DocumentEvent e) {}
+              public void removeUpdate(DocumentEvent e) {
+                save();
+              }
 
               @Override
               public void changedUpdate(DocumentEvent e) {
-                conceptAnnotation.setMotivation(getText());
+                save();
               }
+
+              private void save() {
+                if (!isUpdating && conceptAnnotation != null) {
+                  conceptAnnotation.setMotivation(getText());
+                }
+              }
+
             });
   }
 
@@ -94,24 +108,28 @@ public class AnnotationNotes extends JTextArea implements KnowtatorComponent, Mo
 
   @Override
   public void modelChangeEvent(ChangeEvent<ModelObject> event) {
-    react();
+      SwingUtilities.invokeLater(this::react);
   }
 
   private void react() {
     view.getModel()
         .flatMap(BaseModel::getSelectedTextSource)
-        .ifPresent(
-            textSource -> {
-              if (textSource.getSelectedAnnotation().isPresent()) {
+        .ifPresent(textSource -> {
+            if (textSource.getSelectedAnnotation().isPresent()) {
                 conceptAnnotation = textSource.getSelectedAnnotation().get();
                 setEnabled(true);
+                isUpdating = true;
                 setText(conceptAnnotation.getMotivation());
-              } else {
+                isUpdating = false;
+            } else {
+                conceptAnnotation = null;
                 setEnabled(false);
+                isUpdating = true;
                 setText("");
-              }
-            });
-  }
+                isUpdating = false;
+            }
+        });
+}
 
   @Override
   public void colorChangedEvent(Profile profile) {}
