@@ -163,7 +163,7 @@ public class TextSource implements ModelObject<TextSource>, Savable, ModelListen
     if (content == null) {
       while (true) {
         try {
-          content = FileUtils.readFileToString(textFile, "UTF-8");
+          content = FileUtils.readFileToString(textFile, "UTF-8").replace("\r\n", "\n").replace("\r", "\n");
           return content;
         } catch (IOException e) {
           textFile = new File(BaseModel.getArticlesLocation(model.getProjectLocation()), String.format("%s.txt", id));
