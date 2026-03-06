@@ -141,7 +141,7 @@ public class KnowtatorCollectionActionsTest {
     TestingHelpers.testKnowtatorAction(
         model,
         new ProfileAction(model, REMOVE, null),
-        TestingHelpers.defaultCounts.copy(0, -2, -3, 0, -1, -2, -2, -2, 0));
+        TestingHelpers.defaultCounts.copy(0, -2, -3, 0, -1, -2, -2, -3, 0));
 
     assertThrows(ActionUnperformable.class, this::removeDefaultProfileActionTest);
   }

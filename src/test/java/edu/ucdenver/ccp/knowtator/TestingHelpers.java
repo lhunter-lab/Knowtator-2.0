@@ -41,7 +41,7 @@ public class TestingHelpers {
   /** The constant projectFileName. */
   private static final String projectFileName = "test_project_using_uris";
 
-  public static final ProjectCounts defaultCounts = new ProjectCounts(5, 6, 7, 3, 2, 3, 7, 4, 0);
+  public static final ProjectCounts defaultCounts = new ProjectCounts(5, 6, 7, 3, 2, 3, 7, 5, 0);
 
   /** The constant defaultExpectedTextSources. */
   public static final int defaultExpectedTextSources = 5;
