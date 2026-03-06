@@ -37,6 +37,7 @@ import edu.ucdenver.ccp.knowtator.model.ModelListener;
 import edu.ucdenver.ccp.knowtator.model.collection.CyclableCollection;
 import edu.ucdenver.ccp.knowtator.model.collection.SelectableCollection;
 import edu.ucdenver.ccp.knowtator.model.collection.event.ChangeEvent;
+import edu.ucdenver.ccp.knowtator.model.collection.event.SelectionEvent;
 import edu.ucdenver.ccp.knowtator.model.object.ConceptAnnotation;
 import edu.ucdenver.ccp.knowtator.model.object.ModelObject;
 import edu.ucdenver.ccp.knowtator.model.object.Profile;
@@ -254,22 +255,6 @@ public abstract class AnnotatableTextPane extends SearchableTextPane
                         .flatMap(SelectableCollection::getSelection);
               }
               Optional<Span> finalSpan = span;
-              SwingUtilities.invokeLater(
-                  () -> {
-                    if (finalSpan.isPresent()) {
-                      finalSpan.ifPresent(
-                          span1 -> {
-                            try {
-                              scrollRectToVisible(modelToView(span1.getStart()));
-                            } catch (BadLocationException e) {
-                              e.printStackTrace();
-                            } catch (NullPointerException
-                                | ArrayIndexOutOfBoundsException ignored) {
-                              // It's fine if either of these are thrown
-                            }
-                          });
-                    }
-                  });
             });
   }
 
@@ -396,13 +381,26 @@ public abstract class AnnotatableTextPane extends SearchableTextPane
 
   @Override
   public void modelChangeEvent(ChangeEvent<ModelObject> event) {
-    super.modelChangeEvent(event);
-    if (event.getModel().getNumberOfTextSources() == 0) {
-      setEnabled(false);
-    } else {
-      setEnabled(true);
-      showTextSource();
-    }
+      super.modelChangeEvent(event);
+      if (event.getModel().getNumberOfTextSources() == 0) {
+          setEnabled(false);
+      } else {
+          setEnabled(true);
+          showTextSource();
+          if (event instanceof SelectionEvent) {
+              view.getModel()
+                  .flatMap(BaseModel::getSelectedTextSource)
+                  .flatMap(TextSource::getSelectedAnnotation)
+                  .flatMap(SelectableCollection::getSelection)
+                  .ifPresent(span -> SwingUtilities.invokeLater(() -> {
+                      try {
+                          scrollRectToVisible(modelToView(span.getStart()));
+                      } catch (BadLocationException e) {
+                          e.printStackTrace();
+                      } catch (NullPointerException | ArrayIndexOutOfBoundsException ignored) {}
+                  }));
+          }
+      }
   }
 
   @Override
